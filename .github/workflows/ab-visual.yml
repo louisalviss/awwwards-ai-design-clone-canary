@@ -1,0 +1,34 @@
+name: Awwwards A/B visual comparison
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve B
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/b-site.log 2>&1 &
+          echo $! > /tmp/b-site.pid
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 0.5; done
+          exit 1
+      - name: Capture 12 A/B checkpoints
+        run: node tools/capture-ab.mjs ab-output
+      - name: Score checkpoints
+        run: python3 tools/score-ab.py ab-output | tee ab-output/summary.stdout.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: awwwards-ab-visual-proof
+          path: ab-output
+          retention-days: 7

@@ -12,11 +12,11 @@ const viewports = [
 ];
 const checkpoints = [
   {name:'hero', a:null, b:'#hero'},
-  {name:'intro', a:{kind:'text', text:'In 2025, designers were experimenting with AI'}, b:'#intro'},
-  {name:'quote', a:{kind:'text', text:'AI is sparking a creative renaissance'}, b:'#quote'},
-  {name:'tools', a:{kind:'text', text:'The great toolstack shakeup'}, b:'#tools'},
-  {name:'cases', a:{kind:'text', text:'Seven companies. Seven ways of navigating the same shift'}, b:'#cases'},
-  {name:'newsletter', a:{kind:'text', text:'Get new case studies'}, b:'#newsletter'},
+  {name:'intro', a:{kind:'text', text:'In 2025, designers were experimenting with AI'}, b:'#intro h1'},
+  {name:'quote', a:{kind:'text', text:'AI is sparking a creative renaissance'}, b:'#quote blockquote'},
+  {name:'tools', a:{kind:'text', text:'The great toolstack shakeup'}, b:'#tools h2'},
+  {name:'cases', a:{kind:'text', text:'Seven companies. Seven ways of navigating the same shift'}, b:'#cases h2'},
+  {name:'newsletter', a:{kind:'text', text:'Get new case studies'}, b:'#newsletter h2'},
 ];
 
 const browser = await chromium.launch({headless:true});

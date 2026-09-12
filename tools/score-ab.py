@@ -3,7 +3,9 @@ import importlib.util, json, sys
 from pathlib import Path
 root=Path(sys.argv[1] if len(sys.argv)>1 else 'ab-output')
 spec=importlib.util.spec_from_file_location('visual_diff', Path(__file__).with_name('visual_diff.py'))
-mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+mod=importlib.util.module_from_spec(spec)
+sys.modules[spec.name]=mod
+spec.loader.exec_module(mod)
 rows=[]
 for a in sorted(root.glob('*-A.png')):
     stem=a.name[:-6]
@@ -13,6 +15,8 @@ for a in sorted(root.glob('*-A.png')):
     r['checkpoint']=stem
     (root/(stem+'-diff.json')).write_text(json.dumps(r,indent=2)+'\n')
     rows.append(r)
+if not rows:
+    raise SystemExit('no A/B screenshot pairs found')
 summary={
  'schema':'awwwards-ab-checkpoints-v1',
  'count':len(rows),

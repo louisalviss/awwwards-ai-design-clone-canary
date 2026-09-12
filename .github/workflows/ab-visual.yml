@@ -1,7 +1,8 @@
 name: Awwwards A/B visual comparison
 on:
   push:
-    branches: [main]
+    branches: [main, 'feat/**']
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -25,8 +26,10 @@ jobs:
           exit 1
       - name: Capture 12 A/B checkpoints
         run: node tools/capture-ab.mjs ab-output
-      - name: Score checkpoints
+      - name: Score checkpoints and build repair context
         run: python3 tools/score-ab.py ab-output | tee ab-output/summary.stdout.txt
+      - name: Print acceptance gate
+        run: cat ab-output/gate.json
       - uses: actions/upload-artifact@v4
         with:
           name: awwwards-ab-visual-proof

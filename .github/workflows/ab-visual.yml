@@ -11,6 +11,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout PR baseline
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: baseline-site
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -18,12 +24,19 @@ jobs:
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Serve B
+      - name: Serve candidate and baseline
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/b-site.log 2>&1 &
           echo $! > /tmp/b-site.pid
-          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 0.5; done
-          exit 1
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 0.5; done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            python3 -m http.server 4174 --bind 127.0.0.1 --directory baseline-site >/tmp/base-site.log 2>&1 &
+            echo $! > /tmp/base-site.pid
+            for i in {1..20}; do curl -fsS http://127.0.0.1:4174/ >/dev/null && break; sleep 0.5; done
+            curl -fsS http://127.0.0.1:4174/ >/dev/null
+            echo "BASELINE_URL=http://127.0.0.1:4174/" >> "$GITHUB_ENV"
+          fi
       - name: Capture 12 A/B checkpoints
         run: node tools/capture-ab.mjs ab-output
       - name: Score checkpoints and build repair context

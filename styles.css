@@ -68,3 +68,25 @@ linear-gradient(90deg,#7d5337 0 16%,#4a3022 16% 35%,#b6906f 35% 62%,#3a4c38 62% 
 }
 @media (prefers-reduced-motion:no-preference){.tile{animation:float 9s ease-in-out infinite alternate}.tile:nth-child(2n){animation-delay:-3s}.tile:nth-child(3n){animation-duration:12s}@keyframes float{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-7px,0)}}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+
+/* ROUND7_MOBILE_HERO_ROLLBACK */
+@media (max-width:700px){
+  .hero-collage{
+    background:radial-gradient(ellipse at 18% 35%,#789c8f 0 10%,transparent 29%),radial-gradient(ellipse at 45% 26%,#ff704b 0 16%,transparent 38%),radial-gradient(ellipse at 73% 30%,#d5a9ff 0 19%,transparent 43%),radial-gradient(ellipse at 84% 70%,#f8d5ff 0 17%,transparent 40%),linear-gradient(115deg,#d7c2ff,#ff8266 38%,#e2bbff 66%,#799c92)
+  }
+  .hero-collage:before{content:"";position:absolute;inset:-12%;background:radial-gradient(circle at 30% 34%,rgba(255,105,72,.92) 0 8%,rgba(205,171,254,.72) 16%,transparent 33%),radial-gradient(circle at 66% 56%,rgba(205,171,254,.84),transparent 35%),radial-gradient(circle at 78% 14%,rgba(255,255,255,.62),transparent 25%),radial-gradient(circle at 20% 82%,rgba(42,72,66,.5),transparent 30%);filter:blur(18px) saturate(1.1);transform:scale(1.08)}
+  .hero-collage:after{content:"";position:absolute;inset:0;opacity:.16;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130' viewBox='0 0 130 130'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E")}
+  .wash{display:block;position:absolute;border:1px solid rgba(255,255,255,.75);backdrop-filter:blur(2px)}
+  .wash-a{left:-14%;top:0;width:72%;height:100%;background:linear-gradient(135deg,rgba(255,112,68,.2),rgba(204,170,255,.38),rgba(75,111,111,.18))}
+  .wash-b{right:-18%;top:0;width:65%;height:100%;background:linear-gradient(160deg,rgba(255,255,255,.2),rgba(205,171,254,.34),rgba(255,113,65,.18))}
+  .tile-a{left:-3%;top:17%;width:27%;height:25%;background:linear-gradient(145deg,#555,#bbb)}
+  .tile-b{display:block;left:-8%;top:36%;width:39%;height:64%;background:linear-gradient(135deg,#649889,#dca5ff 58%,#ff7652)}
+  .tile-c{left:68%;top:1%;width:35%;height:35%;background:linear-gradient(135deg,#f2a7ef,#d8b8ff 55%,#ff7150)}
+  .tile-d{left:50%;top:34%;width:52%;height:52%;background:linear-gradient(145deg,#eee,#aaa 45%,#333)}
+  .tile-e{display:none}
+  .tile-f{display:block;left:0;top:0;width:58%;height:100%;background:linear-gradient(145deg,rgba(255,113,65,.35),rgba(205,171,254,.2),rgba(89,126,135,.1))}
+  .tile-a span,.tile-c span{font-size:0;padding:3px 4px}
+  .tile-a span:before{content:"FOUNDER";font:5px/1 var(--mono)}
+  .tile-c span:before{content:"CREATIVE DIRECTOR";font:5px/1 var(--mono)}
+}

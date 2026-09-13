@@ -70,9 +70,16 @@ for (const vp of viewports) {
   const b = await ctx.newPage();
   const aStability = await prepare(a,targetA);
   const bStability = await prepare(b,targetB);
-  captureMeta.viewports[vp.name] = {targetA:aStability,targetB:bStability};
+  captureMeta.viewports[vp.name] = {targetA:aStability,targetB:bStability,checkpoints:{}};
   for (const cp of checkpoints) {
-    await move(a,cp.a); await move(b,cp.b);
+    await move(a,cp.a);
+    await move(b,cp.b);
+    const aCheckpoint = await waitForTextStability(a,{maxMs:10000,stableMs:1200,intervalMs:200});
+    const bCheckpoint = await waitForTextStability(b,{maxMs:5000,stableMs:800,intervalMs:200});
+    if (!aCheckpoint.stable || !bCheckpoint.stable) {
+      throw new Error(`checkpoint text did not stabilize: ${vp.name}/${cp.name}`);
+    }
+    captureMeta.viewports[vp.name].checkpoints[cp.name] = {targetA:aCheckpoint,targetB:bCheckpoint};
     await a.screenshot({path:path.join(out,`${vp.name}-${cp.name}-A.png`), fullPage:false});
     await b.screenshot({path:path.join(out,`${vp.name}-${cp.name}-B.png`), fullPage:false});
   }

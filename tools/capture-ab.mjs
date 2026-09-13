@@ -5,7 +5,8 @@ import path from 'node:path';
 const out = process.argv[2] || 'ab-output';
 await fs.mkdir(out, {recursive:true});
 const targetA = 'https://stateofaidesign.com/';
-const targetB = 'http://127.0.0.1:4173/';
+const candidateUrl = process.env.CANDIDATE_URL || 'http://127.0.0.1:4173/';
+const baselineUrl = (process.env.BASELINE_URL || '').trim() || null;
 const viewports = [
   {name:'desktop', width:1440, height:1000},
   {name:'mobile', width:412, height:915},
@@ -30,9 +31,7 @@ async function waitForTextStability(page, {maxMs=12000, stableMs=1500, intervalM
     samples += 1;
     if (current && current === previous) {
       if (!stableSince) stableSince = Date.now();
-      if (Date.now() - stableSince >= stableMs) {
-        return {stable:true, elapsedMs:Date.now()-started, samples};
-      }
+      if (Date.now() - stableSince >= stableMs) return {stable:true, elapsedMs:Date.now()-started, samples};
     } else {
       previous = current;
       stableSince = 0;
@@ -41,10 +40,10 @@ async function waitForTextStability(page, {maxMs=12000, stableMs=1500, intervalM
   }
   return {stable:false, elapsedMs:Date.now()-started, samples};
 }
-async function prepare(page, url) {
+async function prepare(page, url, isTarget=false) {
   await page.goto(url, {waitUntil:'domcontentloaded', timeout:90000});
   await page.evaluate(async () => { if (document.fonts?.ready) await document.fonts.ready; });
-  await page.waitForTimeout(url === targetA ? 500 : 250);
+  await page.waitForTimeout(isTarget ? 500 : 250);
   const stability = await waitForTextStability(page);
   if (!stability.stable) throw new Error(`text did not stabilize for ${url} within ${stability.elapsedMs}ms`);
   await page.addStyleTag({content:'*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}'}).catch(()=>{});
@@ -63,25 +62,39 @@ async function move(page, spec) {
   });
   await page.waitForTimeout(300);
 }
-const captureMeta = {schema:'awwwards-ab-capture-v2', viewports:{}};
+
+const captureMeta = {
+  schema:'awwwards-ab-capture-v3',
+  mode: baselineUrl ? 'candidate-vs-main-same-reference' : 'single-candidate',
+  targetA,
+  candidateUrl,
+  baselineUrl,
+  viewports:{}
+};
 for (const vp of viewports) {
   const ctx = await browser.newContext({viewport:{width:vp.width,height:vp.height}, reducedMotion:'reduce', colorScheme:'light'});
   const a = await ctx.newPage();
   const b = await ctx.newPage();
-  const aStability = await prepare(a,targetA);
-  const bStability = await prepare(b,targetB);
-  captureMeta.viewports[vp.name] = {targetA:aStability,targetB:bStability,checkpoints:{}};
+  const base = baselineUrl ? await ctx.newPage() : null;
+  const aStability = await prepare(a,targetA,true);
+  const bStability = await prepare(b,candidateUrl,false);
+  const baseStability = base ? await prepare(base,baselineUrl,false) : null;
+  captureMeta.viewports[vp.name] = {targetA:aStability,candidateB:bStability,baselineMain:baseStability,checkpoints:{}};
   for (const cp of checkpoints) {
     await move(a,cp.a);
     await move(b,cp.b);
+    if (base) await move(base,cp.b);
     const aCheckpoint = await waitForTextStability(a,{maxMs:10000,stableMs:1200,intervalMs:200});
     const bCheckpoint = await waitForTextStability(b,{maxMs:5000,stableMs:800,intervalMs:200});
-    if (!aCheckpoint.stable || !bCheckpoint.stable) {
+    const baseCheckpoint = base ? await waitForTextStability(base,{maxMs:5000,stableMs:800,intervalMs:200}) : null;
+    if (!aCheckpoint.stable || !bCheckpoint.stable || (baseCheckpoint && !baseCheckpoint.stable)) {
       throw new Error(`checkpoint text did not stabilize: ${vp.name}/${cp.name}`);
     }
-    captureMeta.viewports[vp.name].checkpoints[cp.name] = {targetA:aCheckpoint,targetB:bCheckpoint};
+    captureMeta.viewports[vp.name].checkpoints[cp.name] = {targetA:aCheckpoint,candidateB:bCheckpoint,baselineMain:baseCheckpoint};
+    // A is captured once and reused for both candidate and baseline scoring.
     await a.screenshot({path:path.join(out,`${vp.name}-${cp.name}-A.png`), fullPage:false});
     await b.screenshot({path:path.join(out,`${vp.name}-${cp.name}-B.png`), fullPage:false});
+    if (base) await base.screenshot({path:path.join(out,`${vp.name}-${cp.name}-BASE.png`), fullPage:false});
   }
   await ctx.close();
 }

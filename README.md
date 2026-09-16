@@ -16,3 +16,13 @@ python3 tools/media-reconstruct.py \
 ```
 
 The run writes `.media-reconstruction/run.json` with source/reference/output hashes, request ID, model, quality and API usage. `assets/generated/media-generated.css` activates only the generated media boxes. Differential A/B CI remains the acceptance gate; generated assets should be kept only when candidate delta is positive and floor does not regress.
+
+### In-chat GPT Image asset path (no API)
+
+Assets created with GPT Image directly in ChatGPT can be handed to the real A/B site without any OpenAI API call:
+
+```bash
+python3 tools/import-chat-media.py --region intro-studio --asset /path/to/chatgpt-image.png
+```
+
+The importer validates the image, constrains it to the declared media region, writes only under `assets/generated/`, records provenance/hash in `.media-reconstruction/chat-import.json`, and updates only the generated media stylesheet. Then open a candidate PR and let differential evaluator v3 keep or reject the asset versus `main` on the same target frame.

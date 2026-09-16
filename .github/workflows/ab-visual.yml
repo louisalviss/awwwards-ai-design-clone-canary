@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Test bounded media reconstructor
+        run: python3 tools/test-media-reconstruct.py
       - name: Install browser
         run: |
           npm install --no-save playwright@1.55.0

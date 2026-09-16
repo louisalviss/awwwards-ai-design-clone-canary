@@ -1,1 +1,11 @@
 /* GPT Image media reconstructor output is written here only after --execute. */
+
+/* ChatGPT in-chat GPT Image canary: bounded to intro media box only. */
+.intro-visual{
+  background-image:url('./intro-chatgpt-canary.jpg')!important;
+  background-size:cover!important;
+  background-position:center 42%!important;
+  background-repeat:no-repeat!important;
+}
+.intro-visual::before,.intro-visual::after,
+.intro-visual .intro-person,.intro-visual .intro-laptop,.intro-visual .intro-light{display:none!important}

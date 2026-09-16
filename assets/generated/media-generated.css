@@ -1,1 +1,5 @@
 /* GPT Image media reconstructor output is written here only after --execute or in-chat import. */
+/* chat-media:intro-studio:begin */
+.intro-visual{background-image:url("./intro-studio-chat-v2.jpg")!important;background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important}
+.intro-visual::before,.intro-visual::after,.intro-visual .intro-person,.intro-visual .intro-laptop,.intro-visual .intro-light{display:none!important}
+/* chat-media:intro-studio:end */
